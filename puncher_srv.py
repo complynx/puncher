@@ -34,10 +34,10 @@ class Cleaner(threading.Thread):
         """
         while True:
             time.sleep(60)
-            logger.info("cleaning")
             now5m = time.time() - (5*60)
             for k in list(addresses.keys()):
                 if addresses[k]["time"] < now5m:
+                    logger.info("removing puncher id %s", k)
                     del addresses[k]
 
 def addr_to_msg(uid, addr):
