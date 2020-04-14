@@ -85,4 +85,4 @@ def main(host='0.0.0.0', port=9999):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-    main()
+    main(port=6980)

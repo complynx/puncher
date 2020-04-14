@@ -1,0 +1,8 @@
+[Unit]
+Description=puncher
+
+[Service]
+ExecStart=/usr/bin/python3 /home/complynx/puncher_srv.py
+
+[Install]
+WantedBy=multi-user.target
