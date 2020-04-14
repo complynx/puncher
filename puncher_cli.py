@@ -1,15 +1,22 @@
-import pyautogui
-from pyautogui import Point
 import time
-import json
 import socket
 import sys
+import json
 
+try:
+    import pyautogui
+    from pyautogui import Point
+except:
+    import subprocess
+    import os
+    subprocess.call([sys.executable,"-m", "pip", "install", "pyautogui"])
+    subprocess.call([sys.executable,os.path.realpath(__file__)])
+    exit()
 
 voicemeeterWinTitle = 'VoiceMeeter'
 vbanTitle = 'VB-Audio Network Configuration'
 puncher_id = "vban_punch_1"
-puncher_addr = ("127.0.0.1", 9999)
+puncher_addr = ("complynx.net", 6980)
 
 minGuiDelay = 0.1
 
@@ -37,7 +44,7 @@ try:
 	voicemeeterWin = pyautogui.getAllWindows()[pyautogui.getAllTitles().index(voicemeeterWinTitle)]
 	voicemeeterWin.activate()
 except ValueError:
-	pyautogui.alert("Open VoiceMeeter Banana window before running this program")
+	pyautogui.alert("Open VoiceMeeter Banana window before running this program.\nInstall it if it's not installed yet")
 	exit(1)
 
 def vbanSetIn(addr,port):
