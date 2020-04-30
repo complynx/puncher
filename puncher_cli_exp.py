@@ -27,7 +27,7 @@ puncher_id = "vban_punch_1"
 puncher_addr = "complynx.net"
 puncher_vban_port = 6981
 puncher_comm_port = 6980
-listen_vban_port = 6981
+listen_vban_port = 0
 
 minGuiDelay = 0.1
 
@@ -100,7 +100,7 @@ def vbanSetOut(addr, port):
 def vbanSetEnable(enable=True):
     logger.info(("en" if enable else "dis") + "abling vban")
     img = pyautogui.screenshot()
-    if (img.getpixel(addp(vbanWin.topleft, vbanEnable))[1] < 200) != enable:
+    if (img.getpixel(addp(vbanWin.topleft, vbanEnable))[1] > 200) != enable:
         pyautogui.click(addp(vbanWin.topleft, vbanEnable))
 
 
@@ -117,11 +117,13 @@ vbanSetEnable(False)
 
 class Pinger(threading.Thread):
     def __init__(self, sentEvent=None):
+        global listen_vban_port
         super(Pinger, self).__init__(name="Pinger")
         self.stop_it = threading.Event()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
         self.sock.bind(("0.0.0.0", listen_vban_port))
-        logger.info("pinger is bound to %s:%d", "0.0.0.0", listen_vban_port)
+        addr, listen_vban_port = self.sock.getsockname()
+        logger.info("pinger is bound to %s:%d", addr, listen_vban_port)
         self.start()
         if sentEvent is not None:
             self.sent = sentEvent

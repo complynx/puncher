@@ -2,6 +2,9 @@ import time
 import socket
 import sys
 import json
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+logger = logging.getLogger()
 
 try:
     import pyautogui
@@ -56,6 +59,7 @@ except ValueError:
 
 
 def vbanSetIn(addr, port):
+    logger.info("setting vban in to %s:%d", addr, port)
     pyautogui.click(addp(vbanWin.topleft, vbanWinHeader))
     time.sleep(minGuiDelay)
     pyautogui.click(addp(vbanWin.topleft, vbanInAddr1))
@@ -72,6 +76,7 @@ def vbanSetIn(addr, port):
 
 
 def vbanSetOut(addr, port):
+    logger.info("setting vban out to %s:%d", addr, port)
     pyautogui.click(addp(vbanWin.topleft, vbanWinHeader))
     time.sleep(minGuiDelay)
     pyautogui.click(addp(vbanWin.topleft, vbanOutAddr1))
@@ -88,8 +93,9 @@ def vbanSetOut(addr, port):
 
 
 def vbanSetEnable(enable=True):
+    logger.info(("en" if enable else "dis") + "abling vban")
     img = pyautogui.screenshot()
-    if (img.getpixel(addp(vbanWin.topleft, vbanEnable))[1] < 200) != enable:
+    if (img.getpixel(addp(vbanWin.topleft, vbanEnable))[1] > 200) != enable:
         pyautogui.click(addp(vbanWin.topleft, vbanEnable))
 
 
@@ -109,7 +115,9 @@ sock.sendto(bytes(json.dumps({
 }), "utf-8"), (puncher_addr, puncher_comm_port))
 
 sockpunch = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sockpunch.bind(("0.0.0.0", puncher_vban_port))
+sockpunch.bind(("0.0.0.0", 0))
+addr, listen_vban_port = sockpunch.getsockname()
+logger.info("pinger is bound to %s:%d", addr, listen_vban_port)
 sockpunch.sendto(b"p", (puncher_addr, puncher_vban_port))
 sockpunch.close()
 
@@ -118,7 +126,7 @@ sock.sendto(bytes(json.dumps({
     "set_send_to": True
 }), "utf-8"), (puncher_addr, puncher_comm_port))
 
-vbanSetIn(puncher_addr, puncher_vban_port)
+vbanSetIn(puncher_addr, listen_vban_port)
 vbanSetOut(puncher_addr, puncher_vban_port)
 vbanSetEnable()
 
