@@ -126,8 +126,9 @@ sock.sendto(bytes(json.dumps({
     "set_send_to": True
 }), "utf-8"), (puncher_addr, puncher_comm_port))
 
-vbanSetIn(puncher_addr, listen_vban_port)
-vbanSetOut(puncher_addr, puncher_vban_port)
+addr = socket.gethostbyname(puncher_addr)
+vbanSetIn(addr, listen_vban_port)
+vbanSetOut(addr, puncher_vban_port)
 vbanSetEnable()
 
 sock.close()

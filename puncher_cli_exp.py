@@ -213,7 +213,8 @@ pinger = Pinger(fetcher.continueEvent)
 fetcher.stop_it.wait()
 pinger.stop_it.wait()
 
-vbanSetIn(fetcher.other_info["addr"], pinger.inner_port)
-vbanSetOut(fetcher.other_info["addr"], fetcher.other_info["re_port"])
+addr = socket.gethostbyname(fetcher.other_info["addr"])
+vbanSetIn(addr, pinger.inner_port)
+vbanSetOut(addr, fetcher.other_info["re_port"])
 vbanSetEnable()
 
