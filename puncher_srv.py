@@ -26,6 +26,8 @@ class Cleaner(threading.Thread):
                 break
             now5m = time.time() - (5*60)
             for k in list(addresses.keys()):
+                logger.info("got %d packets from %s:%d", addresses[k]["count"], addresses[k]["addr"],
+                            addresses[k]["re_port"])
                 if addresses[k]["time"] < now5m:
                     logger.info("removing puncher IP %s", k)
                     del addresses[k]
@@ -59,6 +61,7 @@ class Retransmitter(threading.Thread):
                 addr_struct = addresses[addr[0]]
                 addr_struct["time"] = time.time()
                 addr_struct["re_port"] = addr[1]
+                addr_struct["count"] += 1
                 if "$" in addr_struct:
                     self.sock.sendto(datastr, addr_struct["$"])
                 elif "send_to" in addr_struct and addr_struct["send_to"] in addresses:
@@ -92,6 +95,8 @@ class Server(threading.Thread):
             else:
                 return False
 
+        logger.info("sending ports of %s:%d to %s:%d", source["addr"], source["puncher_port"],
+                    target["addr"], target["puncher_port"])
         self.sock.sendto(bytes(json.dumps({
             "punch_id": target["punch_id"],
             "addr": source["addr"],
@@ -120,8 +125,10 @@ class Server(threading.Thread):
                     addr_struct = addresses[addr[0]] = {
                         "puncher_port": addr[1],
                         "punch_id": punch_id,
-                        "addr": addr[0]
+                        "addr": addr[0],
+                        "count": 0
                     }
+                    logger.info("creating address structure %s:%d", addr[0], addr[1])
                 addr_struct["time"] = time.time()
                 if punch_id in pairings:
                     pairing = pairings[punch_id]
@@ -129,35 +136,42 @@ class Server(threading.Thread):
                     pairing = pairings[punch_id] = {
                         "addr1": addr[0]
                     }
+                    logger.info("creating pairing structure %s", punch_id)
                 pairing["time"] = time.time()
                 addr1 = pairing["addr1"]
                 if addr1 != addr[0] and "addr2" not in pairing:
                     pairing["addr2"] = addr[0]
                 addr2 = pairing["addr2"] if "addr2" in pairing else None
                 other_addr = addr1 if addr1 != addr[0] else addr2
+                logger.info("other addr is %s", repr(other_addr))
                 if other_addr is not None and other_addr in addresses:
                     other_addr_struct = addresses[other_addr]
                 else:
                     other_addr_struct = None
 
                 if "set_send_to" in data:
+                    logger.info("found request set_send_to for addr %s:%d", addr[0], addr[1])
                     addr_struct["set_send_to"] = True
 
                 if "set_send_to" in addr_struct and other_addr_struct is not None\
                         and "set_send_to" in other_addr_struct:
+                    logger.info("setting connection %s <-> %s", addr[0], other_addr)
                     addr_struct["send_to"] = other_addr
                     other_addr_struct["send_to"] = addr[0]
                     del other_addr_struct["set_send_to"]
                     del addr_struct["set_send_to"]
 
                 if "get_my_ports" in data:
+                    logger.info("found request get_my_ports for addr %s:%d", addr[0], addr[1])
                     self.send_ports(addr_struct, addr_struct, "get_my_ports")
 
                 if "get_other_comm_port" in data:
+                    logger.info("found request get_other_comm_port for addr %s:%d", addr[0], addr[1])
                     if other_addr_struct is not None:
                         self.send_ports(other_addr_struct, addr_struct, "get_other_comm_port")
 
                 if "get_other_ports" in data or "get_other_ports" in addr_struct:
+                    logger.info("found request get_other_ports for addr %s:%d", addr[0], addr[1])
                     if other_addr_struct is not None and "re_port" in other_addr_struct:
                         self.send_ports(other_addr_struct, addr_struct, "get_other_ports")
 

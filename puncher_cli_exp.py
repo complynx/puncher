@@ -119,7 +119,7 @@ class Pinger(threading.Thread):
         super(Pinger, self).__init__(name="Pinger")
         self.stop_it = threading.Event()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
-        self.sock.bind(("0.0.0.0", listen_vban_port))
+        self.sock.bind(("0.0.0.0", 0))
         addr, self.inner_port = self.sock.getsockname()
         logger.info("pinger is bound to %s:%d", addr, self.inner_port)
         self.start()
