@@ -9,6 +9,7 @@ logger = logging.getLogger()
 overall_timeout = threading.Event()
 
 threading.Timer(5*60, overall_timeout.set)
+threading.Timer(6*60, exit)
 
 try:
     import pyautogui
@@ -149,7 +150,8 @@ class Fetcher(threading.Thread):
         self.stop_it = threading.Event()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
         self.sock.sendto(bytes(json.dumps({
-            "punch_id": puncher_id
+            "punch_id": puncher_id,
+            "clean": True
         }), "utf-8"), (puncher_addr, puncher_comm_port))
         self.sock.settimeout(3)
         self.continueEvent = threading.Event()

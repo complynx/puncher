@@ -111,7 +111,8 @@ vbanSetEnable(False)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
 sock.sendto(bytes(json.dumps({
-    "punch_id": puncher_id
+    "punch_id": puncher_id,
+    "clean": True
 }), "utf-8"), (puncher_addr, puncher_comm_port))
 
 sockpunch = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

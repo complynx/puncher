@@ -120,7 +120,7 @@ class Server(threading.Thread):
 
             if "punch_id" in data and isinstance(data["punch_id"], str):
                 punch_id = data["punch_id"]
-                if addr[0] in addresses:
+                if addr[0] in addresses and "clean" not in data:
                     addr_struct = addresses[addr[0]]
                 else:
                     addr_struct = addresses[addr[0]] = {
