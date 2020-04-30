@@ -8,8 +8,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
 overall_timeout = threading.Event()
 
-threading.Timer(5*60, overall_timeout.set)
-threading.Timer(6*60, exit)
+threading.Timer(5*60, overall_timeout.set).start()
+threading.Timer(6*60, exit).start()
 
 try:
     import pyautogui
@@ -130,7 +130,7 @@ class Pinger(threading.Thread):
             self.sent = threading.Event()
 
     def run(self):
-        while not overall_timeout.is_set() or not self.stop_it.is_set():
+        while not overall_timeout.is_set() and not self.stop_it.is_set():
             self.sock.sendto(b"p", (puncher_addr, puncher_vban_port))
             logger.info("pinged %s:%d", puncher_addr, puncher_vban_port)
             if not self.sent.is_set():
@@ -169,7 +169,7 @@ class Fetcher(threading.Thread):
             "get_my_ports": True
         }), "utf-8"), (puncher_addr, puncher_comm_port))
         count_ticks = 3
-        while not self.stop_it.is_set() or not overall_timeout.is_set():
+        while not self.stop_it.is_set() and not overall_timeout.is_set():
             count_ticks += 1
             if count_ticks > 3:
                 count_ticks = 0
@@ -213,11 +213,14 @@ fetcher = Fetcher()
 pinger = Pinger(fetcher.continueEvent)
 
 fetcher.stop_it.wait()
+logger.info("returned from fetcher")
 pinger.stop_it.set()
 pinger.join()
+logger.info("returned from pinger")
 
-addr = socket.gethostbyname(fetcher.other_info["addr"])
-vbanSetIn(addr, pinger.inner_port)
-vbanSetOut(addr, fetcher.other_info["re_port"])
-vbanSetEnable()
+if "re_port" in fetcher.other_info:
+    addr = socket.gethostbyname(fetcher.other_info["addr"])
+    vbanSetIn(addr, pinger.inner_port)
+    vbanSetOut(addr, fetcher.other_info["re_port"])
+    vbanSetEnable()
 
