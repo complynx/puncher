@@ -211,7 +211,8 @@ fetcher = Fetcher()
 pinger = Pinger(fetcher.continueEvent)
 
 fetcher.stop_it.wait()
-pinger.stop_it.wait()
+pinger.stop_it.set()
+pinger.join()
 
 addr = socket.gethostbyname(fetcher.other_info["addr"])
 vbanSetIn(addr, pinger.inner_port)
