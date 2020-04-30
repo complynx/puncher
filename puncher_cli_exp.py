@@ -129,7 +129,7 @@ class Pinger(threading.Thread):
             self.sent = threading.Event()
 
     def run(self):
-        while not self.stop_it.is_set():
+        while not overall_timeout.is_set() or not self.stop_it.is_set():
             self.sock.sendto(b"p", (puncher_addr, puncher_vban_port))
             logger.info("pinged %s:%d", puncher_addr, puncher_vban_port)
             if not self.sent.is_set():
