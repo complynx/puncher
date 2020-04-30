@@ -213,8 +213,9 @@ fetcher = Fetcher()
 pinger = Pinger(fetcher.continueEvent)
 
 fetcher.stop_it.wait()
-logger.info("returned from fetcher")
 pinger.stop_it.set()
+fetcher.join()
+logger.info("returned from fetcher")
 pinger.join()
 logger.info("returned from pinger")
 
@@ -223,4 +224,5 @@ if "re_port" in fetcher.other_info:
     vbanSetIn(addr, pinger.inner_port)
     vbanSetOut(addr, fetcher.other_info["re_port"])
     vbanSetEnable()
+exit(0)
 
