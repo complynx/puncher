@@ -27,7 +27,6 @@ puncher_id = "vban_punch_1"
 puncher_addr = "complynx.net"
 puncher_vban_port = 6981
 puncher_comm_port = 6980
-listen_vban_port = 0
 
 minGuiDelay = 0.1
 
@@ -117,13 +116,12 @@ vbanSetEnable(False)
 
 class Pinger(threading.Thread):
     def __init__(self, sentEvent=None):
-        global listen_vban_port
         super(Pinger, self).__init__(name="Pinger")
         self.stop_it = threading.Event()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
         self.sock.bind(("0.0.0.0", listen_vban_port))
-        addr, listen_vban_port = self.sock.getsockname()
-        logger.info("pinger is bound to %s:%d", addr, listen_vban_port)
+        addr, self.inner_port = self.sock.getsockname()
+        logger.info("pinger is bound to %s:%d", addr, self.inner_port)
         self.start()
         if sentEvent is not None:
             self.sent = sentEvent
@@ -213,8 +211,9 @@ fetcher = Fetcher()
 pinger = Pinger(fetcher.continueEvent)
 
 fetcher.stop_it.wait()
+pinger.stop_it.wait()
 
-vbanSetIn(puncher_addr, listen_vban_port)
-vbanSetOut(puncher_addr, puncher_vban_port)
+vbanSetIn(fetcher.other_info["addr"], pinger.inner_port)
+vbanSetOut(fetcher.other_info["addr"], fetcher.other_info["re_port"])
 vbanSetEnable()
 
