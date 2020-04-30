@@ -10,7 +10,7 @@ logger = logging.getLogger()
 overall_timeout = threading.Event()
 
 threading.Timer(5*60, overall_timeout.set).start()
-threading.Timer(6*60, os._exit).start()
+threading.Timer(6*60, os._exit, [0]).start()
 
 try:
     import pyautogui
@@ -226,6 +226,6 @@ if "re_port" in fetcher.other_info:
     vbanSetOut(addr, fetcher.other_info["re_port"])
     vbanSetEnable()
 
-threading.Timer(2, os._exit).start()
+threading.Timer(2, os._exit, [0]).start()
 sys.exit(0)
 
