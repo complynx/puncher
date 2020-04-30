@@ -27,7 +27,7 @@ class Cleaner(threading.Thread):
             now5m = time.time() - (5*60)
             for k in list(addresses.keys()):
                 logger.info("got %d packets from %s:%d", addresses[k]["count"], addresses[k]["addr"],
-                            addresses[k]["re_port"])
+                            addresses[k]["re_port"] if "re_port" in addresses[k] else 0)
                 if addresses[k]["time"] < now5m:
                     logger.info("removing puncher IP %s", k)
                     del addresses[k]
